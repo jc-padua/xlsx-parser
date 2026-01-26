@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+    --color-brand-primary: #0ea5e9;
+    --color-brand-secondary: #2dd4bf;
+    --color-bg-navy: #020617;
+    --color-bg-card: rgba(15, 23, 42, 0.6);
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+    background-color: var(--color-bg-navy);
+    color: #f8fafc;
+}
+
+@layer base {
+    body {
+        @apply antialiased selection:bg-brand-primary/30 selection:text-white;
+        background: radial-gradient(circle at top right, #0c4a6e 0%, #020617 40%),
+            radial-gradient(circle at bottom left, #134e4a 0%, #020617 40%);
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+}
+
+/* Glassmorphism utility */
+.glass-card {
+    @apply bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+.glass-input {
+    @apply bg-white/5 border border-white/10 backdrop-blur-md focus:bg-white/10 focus:border-brand-primary/50 transition-all outline-none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}
