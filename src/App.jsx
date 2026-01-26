@@ -249,9 +249,8 @@ export default function App() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-black tracking-tight text-white">
-                SHEET<span className="text-cyan-400">FLOW</span>
+                TSI XLSX <span className="text-cyan-400">PARSER</span>
               </h1>
-              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] block -mt-1">File Utility</span>
             </div>
           </div>
 
@@ -286,7 +285,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-xs font-bold tracking-widest uppercase mb-8"
                 >
-                  <Sparkles className="w-3 h-3" /> Advanced File Parser
+                  <Sparkles className="w-3 h-3" /> XLSX File Parser
                 </motion.div>
                 <h2 className="text-5xl lg:text-6xl xl:text-7xl font-black text-white tracking-tighter leading-tight mb-8">
                   Data clarity <br />
@@ -425,16 +424,6 @@ export default function App() {
           <div>
             <div className="text-white text-lg font-black tracking-tight mb-2">SHEET<span className="text-cyan-400">FLOW</span>.</div>
             <p className="text-slate-500 text-sm font-medium">The standard in modern browser-based file parsing.</p>
-          </div>
-          <div className="flex gap-10">
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Engine</span>
-              <span className="text-slate-400 text-sm font-bold">V 1.4.2-stable</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Privacy</span>
-              <span className="text-slate-400 text-sm font-bold">Client Side Only</span>
-            </div>
           </div>
         </div>
       </footer>
