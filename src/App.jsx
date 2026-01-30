@@ -32,7 +32,9 @@ function cn(...inputs) {
  */
 function stripHtml(html) {
   if (typeof html !== 'string') return html;
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  // Insert line breaks between a closing tag and a subsequent opening tag
+  const htmlWithBreaks = html.replace(/(<\/[^>]+>)(<[^/!>][^>]*>)/g, '$1\n\n$2');
+  const doc = new DOMParser().parseFromString(htmlWithBreaks, 'text/html');
   return doc.body.textContent || "";
 }
 
@@ -166,7 +168,7 @@ const CardItem = ({ row, idx, keys }) => (
               {key}
             </label>
             <div className={cn(
-              "text-sm font-medium leading-relaxed break-words",
+              "text-sm font-medium leading-relaxed break-words whitespace-pre-wrap",
               isEmpty ? "text-rose-400/60 italic" : "text-slate-200"
             )}>
               {isEmpty ? "— Empty Field" : stripHtml(String(val))}
@@ -206,7 +208,7 @@ const TableView = ({ data }) => {
                   return (
                     <td key={key} className="px-8 py-5">
                       <span className={cn(
-                        "text-sm font-medium",
+                        "text-sm font-medium whitespace-pre-wrap",
                         isEmpty ? "text-rose-400/40 italic" : "text-slate-300"
                       )}>
                         {isEmpty ? "n/a" : stripHtml(String(val))}
@@ -422,7 +424,7 @@ export default function App() {
         <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-teal-500/5 blur-[100px] pointer-events-none" />
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
           <div>
-            <div className="text-white text-lg font-black tracking-tight mb-2">SHEET<span className="text-cyan-400">FLOW</span>.</div>
+            <div className="text-white text-lg font-black tracking-tight mb-2">TSI <span className="text-cyan-400">XLSX PARSER</span>.</div>
             <p className="text-slate-500 text-sm font-medium">The standard in modern browser-based file parsing.</p>
           </div>
         </div>
