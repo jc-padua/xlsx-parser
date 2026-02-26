@@ -14,7 +14,9 @@ import {
   Layers,
   Sparkles,
   ArrowRight,
-  Download
+  Download,
+  Copy,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -38,6 +40,43 @@ function stripHtml(html) {
   return doc.body.textContent || "";
 }
 
+const EXCLUDED_COLUMNS = new Set([
+  'item',
+  'image',
+  'cta text',
+  'cta',
+  'meta title',
+  'meta description',
+]);
+
+function shouldExcludeColumn(columnName) {
+  const normalized = String(columnName).trim().toLowerCase();
+  return EXCLUDED_COLUMNS.has(normalized);
+}
+
+function removeExcludedColumns(row) {
+  return Object.fromEntries(
+    Object.entries(row).filter(([key]) => !shouldExcludeColumn(key))
+  );
+}
+
+function getRenderedValue(val) {
+  const isEmpty = val === "" || val === undefined || val === null;
+  return isEmpty ? "— Empty Field" : stripHtml(String(val));
+}
+
+function buildCardContentText(row, keys) {
+  return keys.map((key) => getRenderedValue(row[key])).join('\n\n');
+}
+
+const PAGE_NAME_KEYS = new Set([
+  'page name',
+  'pagename',
+  'page',
+  'page title',
+  'page_name',
+]);
+
 // --- Components ---
 
 const FileUpload = ({ onDataLoaded, onError }) => {
@@ -48,7 +87,9 @@ const FileUpload = ({ onDataLoaded, onError }) => {
     const reader = new FileReader();
 
     const cleanResult = (data) => {
-      const cleaned = data.filter(row =>
+      const cleaned = data
+        .map(removeExcludedColumns)
+        .filter(row =>
         Object.values(row).some(val => val !== "" && val !== null && val !== undefined)
       );
       if (cleaned.length > 0) {
@@ -138,47 +179,80 @@ const FileUpload = ({ onDataLoaded, onError }) => {
   );
 };
 
-const CardItem = ({ row, idx, keys }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: Math.min(idx * 0.05, 0.4) }}
-    whileHover={{ y: -5 }}
-    className="glass-card rounded-2xl p-7 relative overflow-hidden group"
-  >
-    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-[50px] -mr-16 -mt-16 group-hover:bg-cyan-500/10 transition-colors" />
+const CardItem = ({ row, idx, keys }) => {
+  const [copied, setCopied] = useState(false);
 
-    <div className="flex justify-between items-center mb-6">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-cyan-400">
-          {String(idx + 1).padStart(2, '0')}
-        </div>
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Record Entry</span>
-      </div>
-      <Layers className="w-4 h-4 text-white/20" />
-    </div>
+  const cardCopyText = useMemo(
+    () => buildCardContentText(row, keys),
+    [keys, row]
+  );
 
-    <div className="space-y-4">
-      {keys.map((key) => {
-        const val = row[key];
-        const isEmpty = val === "" || val === undefined || val === null;
-        return (
-          <div key={key} className="group/field">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block group-hover/field:text-cyan-400/50 transition-colors">
-              {key}
-            </label>
-            <div className={cn(
-              "text-sm font-medium leading-relaxed break-words whitespace-pre-wrap",
-              isEmpty ? "text-rose-400/60 italic" : "text-slate-200"
-            )}>
-              {isEmpty ? "— Empty Field" : stripHtml(String(val))}
-            </div>
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(cardCopyText);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard can fail when permission is blocked by browser settings.
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(idx * 0.05, 0.4) }}
+      whileHover={{ y: -5 }}
+      className="glass-card rounded-2xl p-7 relative overflow-hidden group"
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-[50px] -mr-16 -mt-16 group-hover:bg-cyan-500/10 transition-colors" />
+
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-cyan-400">
+            {String(idx + 1).padStart(2, '0')}
           </div>
-        );
-      })}
-    </div>
-  </motion.div>
-);
+          <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Record Entry</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white/60 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
+            aria-label={`Copy record ${idx + 1}`}
+            title="Copy card content"
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              {copied ? 'Copied' : 'Copy'}
+            </span>
+          </button>
+          <Layers className="w-4 h-4 text-white/20" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {keys.map((key) => {
+          const val = row[key];
+          const isEmpty = val === "" || val === undefined || val === null;
+          return (
+            <div key={key} className="group/field">
+              <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block group-hover/field:text-cyan-400/50 transition-colors">
+                {key}
+              </label>
+              <div className={cn(
+                "text-sm font-medium leading-relaxed break-words whitespace-pre-wrap",
+                isEmpty ? "text-rose-400/60 italic" : "text-slate-200"
+              )}>
+                {getRenderedValue(val)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+};
 
 const TableView = ({ data }) => {
   const keys = Object.keys(data[0]);
@@ -230,6 +304,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
+  const tableKeys = useMemo(() => (data?.length ? Object.keys(data[0]) : []), [data]);
 
   const filteredData = useMemo(() => {
     if (!data) return [];
@@ -239,6 +314,44 @@ export default function App() {
       Object.values(row).some(val => String(val).toLowerCase().includes(query))
     );
   }, [data, searchQuery]);
+
+  const pageNameKey = useMemo(
+    () => tableKeys.find((key) => PAGE_NAME_KEYS.has(String(key).trim().toLowerCase())) || null,
+    [tableKeys]
+  );
+
+  const handleExportCards = () => {
+    if (!filteredData.length || !tableKeys.length) return;
+
+    const grouped = filteredData.reduce((acc, row) => {
+      const rawPageName = pageNameKey ? row[pageNameKey] : '';
+      const pageName = String(rawPageName ?? '').trim() || 'Uncategorized';
+      if (!acc.has(pageName)) acc.set(pageName, []);
+      acc.get(pageName).push(row);
+      return acc;
+    }, new Map());
+
+    const lines = [];
+    for (const [pageName, rows] of grouped.entries()) {
+      lines.push(`Page Name: ${pageName}`, '');
+      rows.forEach((row) => {
+        lines.push(buildCardContentText(row, tableKeys), '');
+      });
+      lines.push('');
+    }
+
+    const text = lines.join('\n').trim();
+    const fileName = `cards-export-${new Date().toISOString().slice(0, 10)}.txt`;
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen selection:bg-cyan-500/30 selection:text-white">
@@ -392,10 +505,22 @@ export default function App() {
 
               {filteredData.length > 0 ? (
                 viewMode === 'card' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredData.map((row, idx) => (
-                      <CardItem key={idx} row={row} idx={idx} keys={Object.keys(data[0])} />
-                    ))}
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleExportCards}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white/80 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span className="text-[11px] font-bold uppercase tracking-widest">Export Cards</span>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredData.map((row, idx) => (
+                        <CardItem key={idx} row={row} idx={idx} keys={tableKeys} />
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <TableView data={filteredData} />
