@@ -507,7 +507,9 @@ export default function App() {
                 viewMode === 'card' ? (
                   <div className="space-y-4">
                     <div className="flex justify-end">
-                      <button
+                     {
+                      /*
+                       <button
                         type="button"
                         onClick={handleExportCards}
                         className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white/80 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
@@ -515,6 +517,8 @@ export default function App() {
                         <Download className="w-4 h-4" />
                         <span className="text-[11px] font-bold uppercase tracking-widest">Export Cards</span>
                       </button>
+                      */
+                     }
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filteredData.map((row, idx) => (
