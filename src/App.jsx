@@ -508,7 +508,6 @@ export default function App() {
                   <div className="space-y-4">
                     <div className="flex justify-end">
                      {
-                      /*
                        <button
                         type="button"
                         onClick={handleExportCards}
@@ -517,7 +516,6 @@ export default function App() {
                         <Download className="w-4 h-4" />
                         <span className="text-[11px] font-bold uppercase tracking-widest">Export Cards</span>
                       </button>
-                      */
                      }
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
