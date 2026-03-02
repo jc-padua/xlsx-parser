@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import {
@@ -62,7 +62,7 @@ function removeExcludedColumns(row) {
 
 function getRenderedValue(val) {
   const isEmpty = val === "" || val === undefined || val === null;
-  return isEmpty ? "— Empty Field" : stripHtml(String(val));
+  return isEmpty ? "Empty Field" : stripHtml(String(val));
 }
 
 function buildCardContentText(row, keys) {
@@ -181,6 +181,12 @@ const FileUpload = ({ onDataLoaded, onError }) => {
 
 const CardItem = ({ row, idx, keys }) => {
   const [copied, setCopied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [copiedFieldKey, setCopiedFieldKey] = useState(null);
+  const cardRef = useRef(null);
+  const copiedFieldTimerRef = useRef(null);
+  const previewKey = keys[0];
+  const previewValue = previewKey ? getRenderedValue(row[previewKey]) : "";
 
   const cardCopyText = useMemo(
     () => buildCardContentText(row, keys),
@@ -197,8 +203,34 @@ const CardItem = ({ row, idx, keys }) => {
     }
   };
 
+  const handleBackToTop = () => {
+    cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleCopyFieldValue = async (key, val) => {
+    try {
+      await navigator.clipboard.writeText(getRenderedValue(val));
+      setCopiedFieldKey(key);
+      if (copiedFieldTimerRef.current) {
+        window.clearTimeout(copiedFieldTimerRef.current);
+      }
+      copiedFieldTimerRef.current = window.setTimeout(() => {
+        setCopiedFieldKey(null);
+      }, 5000);
+    } catch {
+      // Clipboard can fail when permission is blocked by browser settings.
+    }
+  };
+
+  useEffect(() => () => {
+    if (copiedFieldTimerRef.current) {
+      window.clearTimeout(copiedFieldTimerRef.current);
+    }
+  }, []);
+
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(idx * 0.05, 0.4) }}
@@ -212,7 +244,6 @@ const CardItem = ({ row, idx, keys }) => {
           <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-cyan-400">
             {String(idx + 1).padStart(2, '0')}
           </div>
-          <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Record Entry</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -227,29 +258,99 @@ const CardItem = ({ row, idx, keys }) => {
               {copied ? 'Copied' : 'Copy'}
             </span>
           </button>
-          <Layers className="w-4 h-4 text-white/20" />
+          <button
+            type="button"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white/60 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
+            aria-expanded={isExpanded}
+            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} record ${idx + 1}`}
+            title={isExpanded ? "Collapse card" : "Expand card"}
+          >
+            <ChevronRight className={cn("w-3.5 h-3.5 transition-transform", isExpanded && "rotate-90")} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              {isExpanded ? 'Collapse' : 'Expand'}
+            </span>
+          </button>
+          <Layers className="w-4 h-4 text-white/20 hidden sm:block" />
         </div>
       </div>
 
-      <div className="space-y-4">
-        {keys.map((key) => {
-          const val = row[key];
-          const isEmpty = val === "" || val === undefined || val === null;
-          return (
-            <div key={key} className="group/field">
-              <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block group-hover/field:text-cyan-400/50 transition-colors">
-                {key}
-              </label>
-              <div className={cn(
-                "text-sm font-medium leading-relaxed break-words whitespace-pre-wrap",
-                isEmpty ? "text-rose-400/60 italic" : "text-slate-200"
-              )}>
-                {getRenderedValue(val)}
-              </div>
+      {!isExpanded ? (
+        <div className="space-y-3">
+          <div className="group/field">
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block">
+              {previewKey || "Record"}
+            </label>
+            <div className="text-sm font-medium leading-relaxed break-words whitespace-pre-wrap text-slate-200 max-h-24 overflow-hidden">
+              {previewValue}
             </div>
-          );
-        })}
-      </div>
+          </div>
+          <p className="text-[10px] font-bold text-white/35 uppercase tracking-widest">
+            {keys.length} fields in this record
+          </p>
+        </div>
+      ) : (
+        <AnimatePresence initial={false}>
+          <motion.div
+            key="expanded-content"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4 overflow-hidden"
+          >
+            {keys.map((key) => {
+              const val = row[key];
+              const isEmpty = val === "" || val === undefined || val === null;
+              return (
+                <div
+                  key={key}
+                  className={cn(
+                    "group/field rounded-xl p-2 -mx-2 transition-colors",
+                    copiedFieldKey === key && "bg-cyan-500/10 ring-1 ring-cyan-400/40"
+                  )}
+                >
+                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block group-hover/field:text-cyan-400/50 transition-colors">
+                    {key}
+                  </label>
+                  <div className="flex items-start gap-2">
+                    <div className={cn(
+                      "text-sm font-medium leading-relaxed break-words whitespace-pre-wrap flex-1",
+                      isEmpty ? "text-rose-400/60 italic" : "text-slate-200"
+                    )}>
+                      {getRenderedValue(val)}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyFieldValue(key, val)}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-white/10 bg-white/5 text-white/50 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
+                      aria-label={`Copy value for ${key}`}
+                      title={`Copy value for ${key}`}
+                    >
+                      {copiedFieldKey === key ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      <span className="text-[9px] font-bold uppercase tracking-wider">
+                        {copiedFieldKey === key ? 'Copied' : 'Copy'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="pt-1 flex justify-end">
+              <button
+                type="button"
+                onClick={handleBackToTop}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white/60 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
+                aria-label={`Go to top of record ${idx + 1}`}
+                title="Back to top of card"
+              >
+                <ChevronRight className="w-3.5 h-3.5 -rotate-90" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Back to Top</span>
+              </button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      )}
     </motion.div>
   );
 };
@@ -518,7 +619,7 @@ export default function App() {
                       </button>
                      }
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6">
                       {filteredData.map((row, idx) => (
                         <CardItem key={idx} row={row} idx={idx} keys={tableKeys} />
                       ))}
