@@ -278,7 +278,7 @@ const CardItem = ({ row, idx, keys }) => {
       {!isExpanded ? (
         <div className="space-y-3">
           <div className="group/field">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block">
+            <label className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mb-1.5 block">
               {previewKey || "Record"}
             </label>
             <div className="text-sm font-medium leading-relaxed break-words whitespace-pre-wrap text-slate-200 max-h-24 overflow-hidden">
@@ -310,7 +310,7 @@ const CardItem = ({ row, idx, keys }) => {
                     copiedFieldKey === key && "bg-cyan-500/10 ring-1 ring-cyan-400/40"
                   )}
                 >
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 block group-hover/field:text-cyan-400/50 transition-colors">
+                  <label className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mb-1.5 block">
                     {key}
                   </label>
                   <div className="flex items-start gap-2">
