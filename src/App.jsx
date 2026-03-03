@@ -64,7 +64,13 @@ function getRenderedValue(val) {
 }
 
 function buildCardContentText(row, keys) {
-  return keys.map((key) => getRenderedValue(row[key])).join('\n\n');
+  return keys
+    .filter((key) => {
+      const normalized = String(key).trim().toLowerCase();
+      return normalized !== 'meta title' && normalized !== 'meta description';
+    })
+    .map((key) => getRenderedValue(row[key]))
+    .join('\n\n');
 }
 
 const PAGE_NAME_KEYS = new Set([
