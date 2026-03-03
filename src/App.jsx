@@ -45,8 +45,6 @@ const EXCLUDED_COLUMNS = new Set([
   'image',
   'cta text',
   'cta',
-  'meta title',
-  'meta description',
 ]);
 
 function shouldExcludeColumn(columnName) {
