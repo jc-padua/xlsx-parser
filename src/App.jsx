@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Database, Home } from 'lucide-react';
 import { TOOLS } from './config/tools';
-import { BokehBackground } from './components/ui/bokeh-background';
 import { ToolDashboard } from './features/dashboard/ToolDashboard';
 import { CsvParserTool } from './features/csvParser/CsvParserTool';
 import { ServicesContentParserTool } from './features/services/ServicesContentParserTool';
@@ -38,18 +37,8 @@ export default function App() {
 
   return (
     <div className="relative isolate min-h-screen selection:bg-cyan-500/30 selection:text-white">
-      <BokehBackground
-        fixed
-        className="z-0 pointer-events-none"
-        count={26}
-        minSize={70}
-        maxSize={230}
-        speed={8}
-      />
-      <div className="fixed inset-0 z-[1] pointer-events-none bg-slate-950/80" />
-
       <div className="relative z-10">
-        <nav className="sticky top-0 z-[100] border-b border-white/5 bg-slate-950/40 backdrop-blur-2xl">
+        <nav className="sticky top-0 z-[100] border-b border-white/5 bg-slate-950/70">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
@@ -78,7 +67,6 @@ export default function App() {
         </nav>
 
         <main className="max-w-7xl mx-auto px-6 py-10 lg:py-14 relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-cyan-600/5 blur-[120px] pointer-events-none" />
           <AnimatePresence mode="wait">
             {!activeTool ? (
               <motion.div

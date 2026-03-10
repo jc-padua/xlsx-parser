@@ -61,8 +61,6 @@ export function CardItem({ row, idx, keys }) {
       transition={{ delay: Math.min(idx * 0.03, 0.25) }}
       className="glass-card rounded-2xl p-6 relative overflow-hidden"
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-[50px] -mr-16 -mt-16 pointer-events-none" />
-
       <div className="flex justify-between items-center mb-5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-cyan-400">

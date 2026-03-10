@@ -23,18 +23,6 @@ export function ToolDashboard({ onOpenTool }) {
               whileTap={{ scale: 0.99 }}
               transition={{ type: 'spring', stiffness: 280, damping: 22 }}
             >
-              <motion.div
-                className="absolute -bottom-16 -right-16 w-40 h-40 bg-cyan-500/10 blur-[60px] pointer-events-none"
-                initial={{ scale: 0.9, opacity: 0.7 }}
-                whileHover={{ scale: 1.25, opacity: 1 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-              />
-              <motion.div
-                className="absolute -top-10 -left-10 w-28 h-28 bg-teal-500/10 blur-[50px] pointer-events-none"
-                initial={{ scale: 0.8, opacity: 0.5 }}
-                whileHover={{ scale: 1.2, opacity: 0.9 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-              />
               <div className="flex items-start justify-between gap-4">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                   <tool.icon className="w-5 h-5 text-slate-950" />

@@ -25,11 +25,11 @@
 
 /* Glassmorphism utility */
 .glass-card {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-slate-900/80 border border-white/10 shadow-2xl;
 }
 
 .glass-input {
-    @apply bg-white/5 border border-white/10 backdrop-blur-md focus:bg-white/10 focus:border-brand-primary/50 transition-all outline-none;
+    @apply bg-white/5 border border-white/10 focus:bg-white/10 focus:border-brand-primary/50 transition-all outline-none;
 }
 
 /* Custom Scrollbar */

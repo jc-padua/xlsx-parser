@@ -67,7 +67,7 @@ export function FileUpload({ onDataLoaded, onError }) {
         'relative rounded-3xl border-2 border-dashed p-12 transition-all duration-500 overflow-hidden group',
         isDragging
           ? 'border-cyan-400 bg-cyan-400/10 shadow-[0_0_40px_rgba(34,211,238,0.2)]'
-          : 'border-white/10 hover:border-white/20 bg-slate-900/40 backdrop-blur-md'
+          : 'border-white/10 hover:border-white/20 bg-slate-900/60'
       )}
       onDragOver={(e) => {
         e.preventDefault();
@@ -81,9 +81,6 @@ export function FileUpload({ onDataLoaded, onError }) {
         if (file) processFile(file);
       }}
     >
-      <div className="absolute -top-24 -left-24 w-64 h-64 bg-cyan-500/10 blur-[100px] pointer-events-none group-hover:bg-cyan-500/20 transition-colors" />
-      <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-teal-500/10 blur-[100px] pointer-events-none group-hover:bg-teal-500/20 transition-colors" />
-
       <div className="relative z-10 flex flex-col items-center text-center gap-6">
         <div className="bg-gradient-to-br from-cyan-400 to-teal-400 p-5 rounded-2xl shadow-[0_0_30px_rgba(34,211,238,0.3)]">
           <Upload className="w-10 h-10 text-slate-900" />
