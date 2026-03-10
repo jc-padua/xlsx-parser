@@ -130,13 +130,15 @@ export function ServicesContentParserTool() {
     page.sections.forEach((section) => {
       if (section.type === 'A') {
         if (section.subHeader) chunks.push(section.subHeader);
-        section.paragraphs.forEach((p) => p && chunks.push(p));
+        const combined = (section.paragraphs || []).filter(Boolean).join('\n\n');
+        if (combined) chunks.push(combined);
         return;
       }
 
       if (section.type === 'B') {
         if (section.header) chunks.push(section.header);
-        section.paragraphs.forEach((p) => p && chunks.push(p));
+        const combined = (section.paragraphs || []).filter(Boolean).join('\n\n');
+        if (combined) chunks.push(combined);
         return;
       }
 
@@ -300,15 +302,13 @@ export function ServicesContentParserTool() {
                               onCopy={(text) => handleCopyText(text, `${page.id}-a-header-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-a-header-${sectionIndex}`}
                             />
-                            {section.paragraphs.map((paragraph, idx) => (
-                              <CopyableText
-                                key={idx}
-                                text={paragraph}
-                                className="text-slate-300 leading-relaxed"
-                                onCopy={(text) => handleCopyText(text, `${page.id}-a-p-${sectionIndex}-${idx}`)}
-                                isCopied={copiedId === `${page.id}-a-p-${sectionIndex}-${idx}`}
-                              />
-                            ))}
+                            <CopyableText
+                              as="div"
+                              text={(section.paragraphs || []).filter(Boolean).join('\n\n')}
+                              className="text-slate-300 leading-relaxed whitespace-pre-wrap"
+                              onCopy={(text) => handleCopyText(text, `${page.id}-a-p-${sectionIndex}`)}
+                              isCopied={copiedId === `${page.id}-a-p-${sectionIndex}`}
+                            />
                           </>
                         )}
 
@@ -321,15 +321,13 @@ export function ServicesContentParserTool() {
                               onCopy={(text) => handleCopyText(text, `${page.id}-b-header-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-b-header-${sectionIndex}`}
                             />
-                            {section.paragraphs.map((paragraph, idx) => (
-                              <CopyableText
-                                key={idx}
-                                text={paragraph}
-                                className="text-slate-300 leading-relaxed"
-                                onCopy={(text) => handleCopyText(text, `${page.id}-b-p-${sectionIndex}-${idx}`)}
-                                isCopied={copiedId === `${page.id}-b-p-${sectionIndex}-${idx}`}
-                              />
-                            ))}
+                            <CopyableText
+                              as="div"
+                              text={(section.paragraphs || []).filter(Boolean).join('\n\n')}
+                              className="text-slate-300 leading-relaxed whitespace-pre-wrap"
+                              onCopy={(text) => handleCopyText(text, `${page.id}-b-p-${sectionIndex}`)}
+                              isCopied={copiedId === `${page.id}-b-p-${sectionIndex}`}
+                            />
                           </>
                         )}
 
