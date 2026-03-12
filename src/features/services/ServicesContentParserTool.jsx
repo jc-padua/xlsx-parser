@@ -38,6 +38,7 @@ function CopyableText({
   onCopy,
   isCopied,
   inline = false,
+  isClicked = false,
 }) {
   const Component = as;
   return (
@@ -46,6 +47,7 @@ function CopyableText({
       onClick={() => onCopy(text)}
       className={[
         inline ? 'inline text-left group align-middle rounded-md px-1 py-0.5' : 'w-full text-left group rounded-lg px-1 py-0.5',
+        isClicked ? 'opacity-25' : '',
         isCopied ? 'ring-1 ring-cyan-400/70 bg-cyan-500/10' : '',
       ].join(' ')}
       title="Click to copy"
@@ -78,6 +80,7 @@ export function ServicesContentParserTool() {
   const [error, setError] = useState(null);
   const [expandedPages, setExpandedPages] = useState({});
   const [copiedId, setCopiedId] = useState(null);
+  const [clickedIds, setClickedIds] = useState(() => new Set());
   const copiedTimerRef = useRef(null);
 
   const handleParseText = () => {
@@ -94,6 +97,7 @@ export function ServicesContentParserTool() {
       }
       setPages(parsedPages);
       setExpandedPages({});
+      setClickedIds(new Set());
     } catch (err) {
       setError(`Unable to parse content: ${err.message}`);
       return;
@@ -113,6 +117,11 @@ export function ServicesContentParserTool() {
     try {
       await navigator.clipboard.writeText(toPlainCopyText(text));
       setCopiedId(id);
+      setClickedIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
       if (copiedTimerRef.current) {
         window.clearTimeout(copiedTimerRef.current);
       }
@@ -221,6 +230,7 @@ export function ServicesContentParserTool() {
               onClick={() => {
                 setPages([]);
                 setError(null);
+                setClickedIds(new Set());
               }}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white/70 hover:text-cyan-400 hover:border-cyan-400/40 transition-colors"
             >
@@ -246,6 +256,7 @@ export function ServicesContentParserTool() {
                       className="text-2xl font-black text-white mt-1"
                       onCopy={(text) => handleCopyText(text, `${page.id}-title`)}
                       isCopied={copiedId === `${page.id}-title`}
+                      isClicked={clickedIds.has(`${page.id}-title`)}
                     />
                   </div>
                   <div className="flex items-center gap-3">
@@ -288,6 +299,7 @@ export function ServicesContentParserTool() {
                     className="text-slate-400 leading-relaxed"
                     onCopy={(text) => handleCopyText(text, `${page.id}-preview`)}
                     isCopied={copiedId === `${page.id}-preview`}
+                    isClicked={clickedIds.has(`${page.id}-preview`)}
                   />
                 ) : (
                   <div className="space-y-4">
@@ -301,6 +313,7 @@ export function ServicesContentParserTool() {
                               className="text-lg font-bold text-white"
                               onCopy={(text) => handleCopyText(text, `${page.id}-a-header-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-a-header-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-a-header-${sectionIndex}`)}
                             />
                             <CopyableText
                               as="div"
@@ -308,6 +321,7 @@ export function ServicesContentParserTool() {
                               className="text-slate-300 leading-relaxed whitespace-pre-wrap"
                               onCopy={(text) => handleCopyText(text, `${page.id}-a-p-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-a-p-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-a-p-${sectionIndex}`)}
                             />
                           </>
                         )}
@@ -320,6 +334,7 @@ export function ServicesContentParserTool() {
                               className="text-lg font-bold text-white"
                               onCopy={(text) => handleCopyText(text, `${page.id}-b-header-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-b-header-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-b-header-${sectionIndex}`)}
                             />
                             <CopyableText
                               as="div"
@@ -327,6 +342,7 @@ export function ServicesContentParserTool() {
                               className="text-slate-300 leading-relaxed whitespace-pre-wrap"
                               onCopy={(text) => handleCopyText(text, `${page.id}-b-p-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-b-p-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-b-p-${sectionIndex}`)}
                             />
                           </>
                         )}
@@ -339,12 +355,14 @@ export function ServicesContentParserTool() {
                               className="text-lg font-bold text-white"
                               onCopy={(text) => handleCopyText(text, `${page.id}-c-header-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-c-header-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-c-header-${sectionIndex}`)}
                             />
                             <CopyableText
                               text={section.openingSentence}
                               className="text-slate-300 leading-relaxed"
                               onCopy={(text) => handleCopyText(text, `${page.id}-c-open-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-c-open-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-c-open-${sectionIndex}`)}
                             />
                             <ul className="space-y-1">
                               {section.bullets.map((bullet, idx) => (
@@ -354,25 +372,27 @@ export function ServicesContentParserTool() {
                                     return (
                                       <div className="space-y-1">
                                         <div className="flex items-start gap-2">
-                                          <span className="text-cyan-300 leading-6">•</span>
+                                          <span className="text-cyan-300 leading-6">-</span>
                                           <CopyableText
                                             as="span"
                                             text={question}
                                             className="inline leading-relaxed text-slate-200"
                                             onCopy={(text) => handleCopyText(text, `${page.id}-c-bq-${sectionIndex}-${idx}`)}
                                             isCopied={copiedId === `${page.id}-c-bq-${sectionIndex}-${idx}`}
+                                            isClicked={clickedIds.has(`${page.id}-c-bq-${sectionIndex}-${idx}`)}
                                             inline
                                           />
                                         </div>
                                         {answer && (
                                           <div className="ml-6 flex items-start gap-2">
-                                            <span className="text-cyan-300/80 leading-6">◦</span>
+                                            <span className="text-cyan-300/80 leading-6">-</span>
                                             <CopyableText
                                               as="span"
                                               text={answer}
                                               className="inline leading-relaxed text-slate-300"
                                               onCopy={(text) => handleCopyText(text, `${page.id}-c-ba-${sectionIndex}-${idx}`)}
                                               isCopied={copiedId === `${page.id}-c-ba-${sectionIndex}-${idx}`}
+                                              isClicked={clickedIds.has(`${page.id}-c-ba-${sectionIndex}-${idx}`)}
                                               inline
                                             />
                                           </div>
@@ -388,6 +408,7 @@ export function ServicesContentParserTool() {
                               className="text-slate-300 leading-relaxed"
                               onCopy={(text) => handleCopyText(text, `${page.id}-c-close-${sectionIndex}`)}
                               isCopied={copiedId === `${page.id}-c-close-${sectionIndex}`}
+                              isClicked={clickedIds.has(`${page.id}-c-close-${sectionIndex}`)}
                             />
                           </>
                         )}
