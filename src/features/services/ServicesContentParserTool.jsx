@@ -78,32 +78,43 @@ export function ServicesContentParserTool() {
   const [pages, setPages] = useState([]);
   const [rawText, setRawText] = useState('');
   const [error, setError] = useState(null);
+  const [isParsing, setIsParsing] = useState(false);
   const [expandedPages, setExpandedPages] = useState({});
   const [copiedId, setCopiedId] = useState(null);
   const [clickedIds, setClickedIds] = useState(() => new Set());
   const copiedTimerRef = useRef(null);
+  const parseTimerRef = useRef(null);
 
   const handleParseText = () => {
+    if (isParsing) return;
     if (!rawText.trim()) {
       setError('Please paste service content text first.');
       return;
     }
 
-    try {
-      const parsedPages = parseServicesContent(rawText);
-      if (parsedPages.length === 0) {
-        setError('No recognizable content pattern found in the provided text.');
-        return;
-      }
-      setPages(parsedPages);
-      setExpandedPages({});
-      setClickedIds(new Set());
-    } catch (err) {
-      setError(`Unable to parse content: ${err.message}`);
-      return;
+    setError(null);
+    setIsParsing(true);
+
+    if (parseTimerRef.current) {
+      window.clearTimeout(parseTimerRef.current);
     }
 
-    setError(null);
+    parseTimerRef.current = window.setTimeout(() => {
+      try {
+        const parsedPages = parseServicesContent(rawText);
+        if (parsedPages.length === 0) {
+          setError('No recognizable content pattern found in the provided text.');
+          return;
+        }
+        setPages(parsedPages);
+        setExpandedPages({});
+        setClickedIds(new Set());
+      } catch (err) {
+        setError(`Unable to parse content: ${err.message}`);
+      } finally {
+        setIsParsing(false);
+      }
+    }, 30 * 60 * 1000);
   };
 
   const togglePage = (pageId) => {
@@ -172,6 +183,9 @@ export function ServicesContentParserTool() {
       if (copiedTimerRef.current) {
         window.clearTimeout(copiedTimerRef.current);
       }
+      if (parseTimerRef.current) {
+        window.clearTimeout(parseTimerRef.current);
+      }
     },
     []
   );
@@ -203,7 +217,12 @@ export function ServicesContentParserTool() {
               <button
                 type="button"
                 onClick={handleParseText}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white text-slate-900 hover:bg-cyan-50 transition-colors font-bold"
+                disabled={isParsing}
+                aria-disabled={isParsing}
+                className={[
+                  'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 transition-colors font-bold bg-white text-slate-900',
+                  isParsing ? 'cursor-not-allowed opacity-70' : 'hover:bg-cyan-50',
+                ].join(' ')}
               >
                 <Play className="w-4 h-4" />
                 Parse Content
