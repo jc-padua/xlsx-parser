@@ -114,7 +114,7 @@ export function ServicesContentParserTool() {
       } finally {
         setIsParsing(false);
       }
-    }, 30 * 60 * 1000);
+    }, 60 * 60 * 1000);
   };
 
   const togglePage = (pageId) => {
